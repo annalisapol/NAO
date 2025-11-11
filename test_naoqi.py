@@ -1,18 +1,35 @@
-'''
-run with .\python2 test_naoqi.py
-'''
+import sys, time, yaml
 
-import sys
-sys.path.append("C:\pynaoqi\pynaoqi-python2.7-2.8.6.23-win64-vs2015-20191127_152649\lib")
+with open("config.yaml", "r") as f:
+    config = yaml.safe_load(f)
+
+pythonpath = config["pythonpath"]
+ip = config["robot"]["ip"]
+port = config["robot"]["port"]
+
+if pythonpath not in sys.path:
+    sys.path.append(pythonpath)
+
 
 from naoqi import ALProxy
 
-ip = "127.0.0.1"  
-port = 9559
+motion = ALProxy("ALMotion", ip, port)
+posture = ALProxy("ALRobotPosture", ip, port)
 
-bm = ALProxy("ALBehaviorManager", ip, port)
+max_time = 120 
 
-print("Available behaviors:")
-print(bm.getInstalledBehaviors())
+motion.wakeUp()
 
-bm.runBehavior("StandInit")
+moves = ["RotationHandgunObject", "RightArm", "DoubleMovement", "ArmsOpening", "UnionArms", "Crouch", "MoveForward", "MoveBackward", "DiagonalLeft", "DiagonalRight", "Stand", "RotationFootRLeg", "RotationFootLLeg", "StandInit", "StandZero", "Sit", "SitRelax"]
+
+sequence = ["StandInit", "StandZero", "Crouch", "StandInit"]
+
+for pose in sequence:
+    print("Going to posture:", pose)
+    posture.goToPosture(pose, 0.7)
+
+motion.rest()
+
+
+
+
