@@ -1,4 +1,5 @@
 import sys, time, yaml
+from constants import *
 
 with open("config.yaml", "r") as f:
     config = yaml.safe_load(f)
@@ -16,20 +17,17 @@ from naoqi import ALProxy
 motion = ALProxy("ALMotion", ip, port)
 posture = ALProxy("ALRobotPosture", ip, port)
 
-max_time = 120 
 
-motion.wakeUp()
+bm = ALProxy("ALBehaviorManager", ip, port)
 
-moves = ["RotationHandgunObject", "RightArm", "DoubleMovement", "ArmsOpening", "UnionArms", "Crouch", "MoveForward", "MoveBackward", "DiagonalLeft", "DiagonalRight", "Stand", "RotationFootRLeg", "RotationFootLLeg", "StandInit", "StandZero", "Sit", "SitRelax"]
+print("Available behaviors:")
+print(bm.getInstalledBehaviors())
 
-sequence = ["StandInit", "StandZero", "Crouch", "StandInit"]
-
-for pose in sequence:
-    print("Going to posture:", pose)
-    posture.goToPosture(pose, 0.7)
-
-motion.rest()
-
-
-
-
+"""
+CONSTRAINTS:
+- possible incompatibilities between two consecutive positions (use
+simulator in choreographe to understand if and what they are)
+- time constraints (2 minutes max for the whole choreography)
+- constraints on the number of intermediate positions to be used in the
+whole choreography (at least 5)
+"""
