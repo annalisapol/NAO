@@ -10,4 +10,4 @@ class NAOProblem(Problem):
         self.incompatibilities = incompatibilities #to be defined, should be a dict mapping each move to the list of incompatible moves
 
     def action(self, state):
-        ...
+        return state

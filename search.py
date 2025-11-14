@@ -1331,9 +1331,10 @@ def print_boggle(board):
         if i % n == 0 and i > 0:
             print()
         if board[i] == 'Q':
-            print('Qu', end=' ')
+            print 'Qu',
         else:
-            print(str(board[i]) + ' ', end=' ')
+            print str(board[i]) + '',
+
     print()
 
 

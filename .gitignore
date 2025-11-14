@@ -1,6 +1,7 @@
 .vscode/
 
 *.bat
+*.pyc
 
 config.yaml
 

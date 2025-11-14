@@ -2,14 +2,23 @@
 
 import bisect
 import collections
-import collections.abc
+try:
+    import collections.abc as collections_abc
+except ImportError:
+    collections_abc = collections 
+
 import functools
 import heapq
 import operator
 import os.path
 import random
 from itertools import chain, combinations
-from statistics import mean
+try:
+    from statistics import mean 
+except ImportError:
+    def mean(data):
+        data = list(data)
+        return float(sum(data)) / len(data) if data else 0
 
 import numpy as np
 
@@ -20,7 +29,7 @@ import numpy as np
 
 def sequence(iterable):
     """Converts iterable to sequence, if it is not already one."""
-    return iterable if isinstance(iterable, collections.abc.Sequence) else tuple([iterable])
+    return iterable if isinstance(iterable, collections._abc.Sequence) else tuple([iterable])
 
 
 def remove_all(item, seq):
@@ -92,8 +101,9 @@ def power_set(iterable):
 
 def extend(s, var, val):
     """Copy dict s and extend it by setting var to val; return copy."""
-    return {**s, var: val}
-
+    new_dict = s.copy()
+    new_dict[var] = val
+    return new_dict
 
 def flatten(seqs):
     return sum(seqs, [])
@@ -439,7 +449,7 @@ def isnumber(x):
 
 def issequence(x):
     """Is x a sequence?"""
-    return isinstance(x, collections.abc.Sequence)
+    return isinstance(x, collections_abc.Sequence)
 
 
 def print_table(table, header=None, sep='   ', numfmt='{}'):
@@ -643,7 +653,9 @@ def subexpressions(x):
     yield x
     if isinstance(x, Expr):
         for arg in x.args:
-            yield from subexpressions(arg)
+            # manually yield each subexpression from the recursive call
+            for sub in subexpressions(arg):
+                yield sub
 
 
 def arity(expression):
