@@ -1,4 +1,4 @@
-# load_moves.py
+
 import os
 import sys
 import importlib
@@ -33,4 +33,5 @@ returns something like:
     "DiagonalLeft": <function DiagonalLeft.main>,
     ...
 }
+
 """
