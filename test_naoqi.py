@@ -24,15 +24,13 @@ ROBOT_POSITIONS = os.path.join(BASE_DIR, "RobotPositions")
 moves = load_robot_moves(ROBOT_POSITIONS)
 
 
-print("Available behaviors:")
-print(bm.getInstalledBehaviors())
+def run_move(move_name):
+    if move_name not in moves:
+        print("[ERROR] Move not found:", move_name)
+        return
 
-
-print("Postures available:")
-print(posture.getPostureList())
-
-print("Detected robot positions:")
-
+    print("[RUNNING]", move_name)
+    moves[move_name](ip, port)
 
 
 """

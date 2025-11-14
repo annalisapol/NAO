@@ -20,7 +20,7 @@ def main(robotIP, port):
         print "Could not create proxy to ALRobotPosture"
         print "Error was:", e
 
-    time.sleep(1)
+    #time.sleep(1)
 
     # Helper: degrees -> radians
     def rad(deg):
@@ -53,7 +53,7 @@ def main(robotIP, port):
         True
     )
 
-    time.sleep(0.2)
+    #time.sleep(0.2)
 
     # ------------------------------------------------------------
     # 2) OPEN / EXTEND ARMS
@@ -90,7 +90,7 @@ def main(robotIP, port):
         True
     )
 
-    time.sleep(0.5)
+    #time.sleep(0.5)
 
     # ------------------------------------------------------------
     # 3) CLOSE ARMS (Symmetric closing motion)
@@ -119,7 +119,7 @@ def main(robotIP, port):
         True
     )
 
-    time.sleep(1)
+    #time.sleep(1)
 
     # ------------------------------------------------------------
     # 4) FINAL POSITION (Return to initial pose)

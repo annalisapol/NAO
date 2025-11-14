@@ -26,7 +26,7 @@ def main(robotIP, port):
         print "Could not create proxy to ALTextToSpeech"
         print "Error was:", e
 
-    time.sleep(1)
+    #time.sleep(1)
 
     # Forward movement (3 small steps)
     distance_x_m = 0.08     # forward

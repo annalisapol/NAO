@@ -26,7 +26,7 @@ def main(robotIP, port):
         print "Could not create proxy to ALTextToSpeech"
         print "Error was:", e
 
-    time.sleep(1)
+    #time.sleep(1)
 
     # Helper: degrees -> radians
     def rad(d):
@@ -61,19 +61,19 @@ def main(robotIP, port):
         True
     )
 
-    time.sleep(1)
+    #time.sleep(1)
 
     # ------------------------------------------------------------
     # 2) OPEN RIGHT HAND (Ask user to insert fan)
     # ------------------------------------------------------------
     motionProxy.angleInterpolation("RHand", [0.90], 1, True)
-    time.sleep(1)
+    #time.sleep(1)
 
     # ------------------------------------------------------------
     # 3) CLOSE RIGHT HAND (fan grasped)
     # ------------------------------------------------------------
     motionProxy.angleInterpolation("RHand", [0.05], 1, True)
-    time.sleep(0.5)
+    #time.sleep(0.5)
 
     # ------------------------------------------------------------
     # 4) ROTATE FAN (Right Wrist rotation only)

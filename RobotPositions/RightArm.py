@@ -26,7 +26,7 @@ def main(robotIP, port):
         print "Could not create proxy to ALTextToSpeech"
         print "Error was:", e
 
-    time.sleep(1)
+    #time.sleep(1)
 
     # Helper for degrees -> radians
     def rad(deg):
@@ -73,7 +73,7 @@ def main(robotIP, port):
         0.1
     )
 
-    time.sleep(2)
+    #time.sleep(2)
 
     # ------------------------------------------------------------
     # 3) Raise RArm sideways
@@ -89,7 +89,7 @@ def main(robotIP, port):
         0.15
     )
 
-    time.sleep(1)
+    #time.sleep(1)
 
     # ------------------------------------------------------------
     # 4) Align shoulder and move RArm forward

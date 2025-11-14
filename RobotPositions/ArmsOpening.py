@@ -26,7 +26,7 @@ def main(robotIP, port):
         print "Could not create proxy to ALTextToSpeech"
         print "Error was: ", e
 
-    time.sleep(1)
+    #time.sleep(1)
 
     # ---------------------------------------------------------------------------
     # Helper: convert degrees to radians
@@ -67,7 +67,7 @@ def main(robotIP, port):
         True
     )
 
-    time.sleep(0.2)
+    #time.sleep(0.2)
 
     # ---------------------------------------------------------------------------
     # MOVEMENT 1
@@ -98,7 +98,7 @@ def main(robotIP, port):
         0.08
     )
 
-    time.sleep(1.2)
+    #time.sleep(1.2)
 
     # ---------------------------------------------------------------------------
     # Close Arms
@@ -129,7 +129,7 @@ def main(robotIP, port):
         0.15
     )
 
-    time.sleep(0.4)
+    #time.sleep(0.4)
 
     # ---------------------------------------------------------------------------
     # Stretch + Raise Arms
@@ -153,7 +153,7 @@ def main(robotIP, port):
         0.1
     )
 
-    time.sleep(0.2)
+    #time.sleep(0.2)
 
     motionProxy.setAngles(
         "LArm",
@@ -162,7 +162,7 @@ def main(robotIP, port):
         0.1
     )
 
-    time.sleep(2.2)
+    #time.sleep(2.2)
 
     # ---------------------------------------------------------------------------
     # FINAL POSITION

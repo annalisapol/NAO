@@ -130,7 +130,7 @@ def main(robotIP, port):
 
 
 
-    time.sleep(3) # waiting a few seconds
+    #time.sleep(3)  
 
     
 
