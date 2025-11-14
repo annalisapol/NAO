@@ -22,7 +22,7 @@ def main(robotIP, port):
 
     time.sleep(1)
 
-    # Helper: degrees → radians
+    # Helper: degrees -> radians
     def rad(deg):
         return deg * 3.14159 / 180.0
 

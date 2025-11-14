@@ -1,4 +1,5 @@
 import sys, os, time, yaml
+from load_moves import load_robot_moves
 from constants import *
 
 with open("config.yaml", "r") as f:
@@ -19,11 +20,9 @@ bm = ALProxy("ALBehaviorManager", ip, port)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROBOT_POSITIONS = os.path.join(BASE_DIR, "RobotPositions")
-sys.path.append(ROBOT_POSITIONS)
 
-from MoveForward import main as move_forward_main
-from WipeForehead import main as wipe_forehead_main
-from RotationFootLLeg import main as rotation_foot_LLeg_main
+moves = load_robot_moves(ROBOT_POSITIONS)
+
 
 print("Available behaviors:")
 print(bm.getInstalledBehaviors())
@@ -32,11 +31,10 @@ print(bm.getInstalledBehaviors())
 print("Postures available:")
 print(posture.getPostureList())
 
-print("Running MoveForward...")
+print("Detected robot positions:")
 
-rotation_foot_LLeg_main(ip, port)
-move_forward_main(ip, port)
-wipe_forehead_main(ip, port)
+
+
 """
 CONSTRAINTS:
 - possible incompatibilities between two consecutive positions (use
