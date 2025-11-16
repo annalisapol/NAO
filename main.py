@@ -24,9 +24,29 @@ This script runs the full choreography planning pipeline:
 
 This file acts as the entry point for planning and executing the NAO choreography.
 """
+from constants import *
+from nao_problem import NAOProblem
+from load_moves import load_robot_moves
+from naoqi import ALProxy
+
+import sys, os, time, yaml
+with open("config.yaml", "r") as f:
+    config = yaml.safe_load(f)
+
+pythonpath = config["pythonpath"]
+ip = config["robot"]["ip"]
+port = config["robot"]["port"]
+
+if pythonpath not in sys.path:
+    sys.path.append(pythonpath)
 
 if __name__ == "__main__":
-    # 1. Load move data
+   # 1. Load move data
+   moves = load_robot_moves("RobotPositions/")
+   move_durations = MOVE_TIME
+
+
+
     # 2. Initialize search problem
     # 3. Run planner
     # 4. Print or execute plan

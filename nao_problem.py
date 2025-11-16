@@ -2,7 +2,7 @@
 # It encodes the robot's possible moves, constraints, and how states
 # transition during the choreography planning 
 from search import Problem
-from constants import MOVES, MAX_TIME
+from constants import *
 from utils import distance
 
 class NAOProblem(Problem):
@@ -19,7 +19,9 @@ class NAOProblem(Problem):
             "time": 0,
             "mandatory_left": set(MANDATORY),
             "intermediate_count":0
-            "posture": "Stand"
+            "posture": "None"
+            # changing this to None because "Stand" still needs to be computed, since time is at 0
+            # initial posture is undefined
         }
         
         super().__init___(self.state,None)

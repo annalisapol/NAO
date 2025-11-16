@@ -1,7 +1,201 @@
+# Changing the data retrieving system, it was getting messy
+# Keeping the code if we need to revert
+# Creating one dictionary with all the moves information (time, pre/post conditions, categories ..)
+# It' a bit long but we only have 26 moves and it's easier to read/retrieve this way
+
+MAX_TIME = 120
+
+MOVES = {
+    'ArmDanceDX': {
+        "category": "intermediate",
+        "duration": 6.55,
+        "requires": "standing",
+        "produces": "standing",
+        "module": "ArmDanceDX"
+    },
+    'ArmDanceSX': {
+        "category": "intermediate",
+        "duration": 6.56,
+        "requires": "standing",
+        "produces": "standing",
+        "module": "ArmDanceSX"
+    },
+    'ArmsOpening': {
+        "category": "intermediate",
+        "duration": 6.87,
+        "requires": "standing",
+        "produces": "standing",
+        "module": "ArmsOpening"
+    },
+    'BirthdayDance': {
+        "category": "intermediate",
+        "duration": 12.47,
+        "requires": "standing",
+        "produces": "standing",
+        "module": "BirthdayDance"
+    },
+    'DiagonalLeft': {
+        "category": "intermediate",
+        "duration": 3.36,
+        "requires": "standing",
+        "produces": "standing",
+        "module": "DiagonalLeft"
+    },
+    'DiagonalRight': {
+        "category": "intermediate",
+        "duration": 3.38,
+        "requires": "standing",
+        "produces": "standing",
+        "module": "DiagonalRight"
+    },
+    'Disco': {
+        "category": "intermediate",
+        "duration": 6.61,
+        "requires": "standing",
+        "produces": "standing",
+        "module": "Disco"
+    },
+    'DoubleMovement': {
+        "category": "intermediate",
+        "duration": 7.26,
+        "requires": "standing",
+        "produces": "standing",
+        "module": "DoubleMovement"
+    },
+    'MoveBackward': {
+        "category": "intermediate",
+        "duration": 4.5,
+        "requires": "standing",
+        "produces": "standing",
+        "module": "MoveBackward"
+    },
+    'MoveForward': {
+        "category": "intermediate",
+        "duration": 3.94,
+        "requires": "standing",
+        "produces": "standing",
+        "module": "MoveForward"
+    },
+    'RightArm': {
+        "category": "intermediate",
+        "duration": 12.33,
+        "requires": "standing",
+        "produces": "standing",
+        "module": "RightArm"
+    },
+    'RotationFootLLeg': {
+        "category": "intermediate",
+        "duration": 13.35,
+        "requires": "standing",
+        "produces": "standing",
+        "module": "RotationFootLLeg"
+    },
+    'RotationFootRLeg': {
+        "category": "intermediate",
+        "duration": 97.9,
+        "requires": "standing",
+        "produces": "standing",
+        "module": "RotationFootRLeg"
+    },
+    'RotationHandgunObject': {
+        "category": "intermediate",
+        "duration": 5.43,
+        "requires": "standing",
+        "produces": "standing",
+        "module": "RotationHandgunObject"
+    },
+    'Sprinkler1': {
+        "category": "intermediate",
+        "duration": 6.65,
+        "requires": "standing",
+        "produces": "standing",
+        "module": "Sprinkler1"
+    },
+    'Sprinkler2': {
+        "category": "intermediate",
+        "duration": 6.58,
+        "requires": "standing",
+        "produces": "standing",
+        "module": "Sprinkler2"
+    },
+    'UnionArms': {
+        "category": "intermediate",
+        "duration": 10.13,
+        "requires": "standing",
+        "produces": "standing",
+        "module": "UnionArms"
+    },
+    'VOnEyes': {
+        "category": "intermediate",
+        "duration": 7.74,
+        "requires": "standing",
+        "produces": "standing",
+        "module": "VOnEyes"
+    },
+    "Sit": {
+        "category": "mandatory",
+        "duration": 13.2,
+        "requires": "standing",
+        "produces": "sitting",
+        "module": "Sit"
+    },
+    "WipeForehead": {
+        "category": "mandatory",
+        "duration": 7.96,
+        "requires": "standing",
+        "produces": "standing",
+        "module": "WipeForehead"
+    },
+    "Hello": {
+        "category": "mandatory",
+        "duration": 7.68,
+        "requires": "standing",
+        "produces": "standing",
+        "module": "Hello"
+    },
+    "SitRelax": {
+        "category": "mandatory",
+        "duration": 11.6,
+        "requires": "standing",
+        "produces": "sitting",
+        "module": "SitRelax"
+    },
+    "Stand": {
+        "category": "mandatory",
+        "duration": 0.82,
+        "requires": "sitting",
+        "produces": "standing",
+        "module": "Stand"
+    },
+    "StandZero": {
+        "category": "mandatory",
+        "duration": 1.25,
+        "requires": "standing",
+        "produces": "standing",
+        "module": "StandZero"
+    },
+    "StandInit": {
+        "category": "system",
+        "duration": 0.76,
+        "requires": "standing",   # adjust if needed
+        "produces": "standing",
+        "module": "StandInit"
+    },
+    "Crouch": {
+        "category": "system",
+        "duration": 3.1,
+        "requires": "standing",   # adjust if needed
+        "produces": "standing",   
+        "module": "Crouch"
+    }
+}
+
+"""
 INTERMEDIATE = ['ArmDanceDX', 'ArmDanceSX', 'ArmsOpening', 'BirthdayDance', 'BlowKisses',  'DanceMove', 'DiagonalLeft', 'DiagonalRight', 'Disco', 'DoubleMovement', 'MoveBackward', 'MoveForward', 'RightArm', 'RotationFeet', 'RotationFootLLeg', 'RotationFootRLeg', 'RotationHandgunObject', 'Sprinkler1', 'Sprinkler2',  'ThrillerArmSideways', 'ThrillerClap', 'ThrillerSnapSnap', 'UnionArms', 'VOnEyes']
 MANDATORY = ["Sit", "WipeForehead", "Hello", "SitRelax", "Stand", "StandZero"]
 INITIAL_STATE_M = "StandInit"
 FINAL_GOAL_M = "Crouch"
+
 
 MAX_TIME = 120
 
@@ -58,3 +252,4 @@ for move in STANDING_MOVES:
         "requires": None,
         "produces": "standing"
     }
+"""
