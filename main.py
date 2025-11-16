@@ -26,7 +26,7 @@ This file acts as the entry point for planning and executing the NAO choreograph
 """
 from constants import *
 from nao_problem import NAOProblem
-from load_moves import load_robot_moves
+from moves_helper import load_moves
 from naoqi import ALProxy
 
 import sys, os, time, yaml
@@ -42,7 +42,7 @@ if pythonpath not in sys.path:
 
 if __name__ == "__main__":
    # 1. Load move data
-   moves = load_robot_moves("RobotPositions/")
+   moves = load_moves("RobotPositions/")
    move_durations = MOVE_TIME
 
 

@@ -1,5 +1,5 @@
 import sys, os, time, yaml
-from load_moves import load_robot_moves
+from moves_helper import load_moves
 from constants import *
 
 with open("config.yaml", "r") as f:
@@ -21,7 +21,7 @@ bm = ALProxy("ALBehaviorManager", ip, port)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROBOT_POSITIONS = os.path.join(BASE_DIR, "RobotPositions")
 
-moves = load_robot_moves(ROBOT_POSITIONS)
+moves = load_moves(ROBOT_POSITIONS)
 
 
 def run_move(move_name):

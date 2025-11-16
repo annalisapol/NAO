@@ -175,14 +175,14 @@ MOVES = {
         "module": "StandZero"
     },
     "StandInit": {
-        "category": "system",
+        "category": "starting",
         "duration": 0.76,
         "requires": "standing",   # adjust if needed
         "produces": "standing",
         "module": "StandInit"
     },
     "Crouch": {
-        "category": "system",
+        "category": "ending",
         "duration": 3.1,
         "requires": "standing",   # adjust if needed
         "produces": "standing",   
