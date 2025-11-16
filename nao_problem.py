@@ -31,6 +31,9 @@ class NAOProblem(Problem):
             # changing this to None because "Stand" still needs to be computed, since time is at 0
             # initial posture is not defined yet 
             # "Stand" should be passed to the problem in some way and then compute it's time
+
+            # trying to use this to force StandInit at the beginning
+            self.computed_moves = []
         }
         
         super().__init__(self.state,None)
@@ -47,10 +50,18 @@ class NAOProblem(Problem):
         - Incompatibilities with previous move
         - Posture requirements (standing/sitting)
         '''
+        
+
+
         #changing name to next_moves to avoid conflict with reserved python keyword "next"
         next_moves = []
 
-        # no logic changes, just adapting to new MOVES dict structure
+        # forcing StandInit at the beginning
+        if self.computed_moves == []:
+            next_moves.append("StandInit")
+            return next_moves
+
+        # adapting to new MOVES dict structure
 
         for move, info in MOVES.items():
 
@@ -88,6 +99,9 @@ class NAOProblem(Problem):
 
         result_state["posture"] = info["produces"]
 
+        # right now only a list storing the computed moves 
+        self.computed_moves.append(action)
+
         return result_state
 
     def goal_test(self, state):
@@ -102,4 +116,6 @@ class NAOProblem(Problem):
             state["time"] <= self.max_time and
             not state["mandatory_left"] and
             state["intermediate_count"] >= 5
+            # ensuring the last move is Crouch
+            and self.computed_moves[-1] == "Crouch"
         )
