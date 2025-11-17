@@ -21,7 +21,6 @@ class NAOProblem(Problem):
         '''
         self.MANDATORY = set(get_mandatory_moves())
         self.INTERMEDIATE = set(get_intermediate_moves())
-
         self.state={
             "time": 0,
             #copying the mandatory moves set to avoid modifying the global structure
@@ -33,14 +32,15 @@ class NAOProblem(Problem):
             # "Stand" should be passed to the problem in some way and then compute it's time
             
             # keeping track of moves done for forcing initial and final postures
-            "moves_done": []
+            "moves_done": [],
+            "moves": MOVES.copy()
         }
         
         super().__init__(self.state,None)
 
         self.max_time = max_time
         
-    # changing name into actions otherwise it won't override the Problem "actions" class method
+
     def actions(self, state):
         '''
         Return all possible moves that the robot can execute from the current states
@@ -57,7 +57,7 @@ class NAOProblem(Problem):
         next_moves = []
 
         # adapting to new MOVES dict structure
-        for move, info in MOVES.items():
+        for move, info in state["moves"].items():
 
             duration = info["duration"]
             requires = info["requires"]
@@ -75,7 +75,7 @@ class NAOProblem(Problem):
         '''
         #taking all info about the move called (action represents the move name)
         # again no logic changes, just adapting to new MOVES dict structure
-        info = MOVES[action]
+        info = state["moves"][action]
 
         result_state = state.copy()
 
@@ -88,6 +88,8 @@ class NAOProblem(Problem):
             # so the algorithm can explore different branches correctly
             result_state["mandatory_left"] = result_state["mandatory_left"].copy()
             result_state["mandatory_left"].remove(action)
+            del state["moves"][action]
+
         elif action in self.INTERMEDIATE:
             result_state["intermediate_count"]+=1
 

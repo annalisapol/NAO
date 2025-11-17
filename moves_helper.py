@@ -47,7 +47,6 @@ def get_moves_names():
 def get_mandatory_moves():
     return [m for m in MOVES if MOVES[m]["category"] == "mandatory"]
 
-
 def get_intermediate_moves():
     return [m for m in MOVES if MOVES[m]["category"] == "intermediate"]
 
@@ -56,3 +55,5 @@ def moves_requiring(posture):
 
 def moves_producing(posture):
     return [m for m, data in MOVES.items() if data["produces"] == posture]
+def get_times():
+    return 

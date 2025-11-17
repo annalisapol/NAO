@@ -43,7 +43,7 @@ if pythonpath not in sys.path:
 if __name__ == "__main__":
    # 1. Load move data
    moves = load_moves("RobotPositions/")
-   move_durations = MOVE_TIME
+   move_durations = MAX_TIME
 
 
 
