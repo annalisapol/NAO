@@ -3,14 +3,12 @@
 # transition during the choreography planning 
 from search import Problem
 from constants import MOVES, MAX_TIME
-from moves_helpers import (
+from moves_helper import (
     get_mandatory_moves,
     get_intermediate_moves)
 
-from utils import distance
-
 class NAOProblem(Problem):
-    def __init__(self, max_time=MAX_TIME, initial_state=None, goal=None):
+    def __init__(self, initial="StandInit", goal="Crouch"):
         '''
         Initialize the planning problem with:
         - Initial state
@@ -19,6 +17,9 @@ class NAOProblem(Problem):
         - Incompatibility constraints
         - Maximum allowed time (2 min = 120s)
         '''
+        self.initial=initial
+        self.goal=goal
+
         self.MANDATORY = set(get_mandatory_moves())
         self.INTERMEDIATE = set(get_intermediate_moves())
         self.state={
@@ -38,7 +39,7 @@ class NAOProblem(Problem):
         
         super().__init__(self.state,None)
 
-        self.max_time = max_time
+        self.max_time = MAX_TIME
         
 
     def actions(self, state):
@@ -51,7 +52,7 @@ class NAOProblem(Problem):
         '''
         # must start with StandInit 
         if state["moves_done"] == []:
-            return ["StandInit"]
+            return [self.initial]
 
         #changing name to next_moves to avoid conflict with reserved python keyword "next"
         next_moves = []
@@ -112,5 +113,5 @@ class NAOProblem(Problem):
             state["intermediate_count"] >= 5 and 
             state["moves_done"] and
             # final posture forced to Crouch
-            state["moves_done"][-1] == "Crouch"
+            state["moves_done"][-1] == self.goal
         )

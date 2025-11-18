@@ -1,35 +1,9 @@
-"""
-This script runs the full choreography planning pipeline:
-
-1. Load the domain information:
-   - move durations
-   - posture pre/post conditions
-   - mandatory and intermediate move sets
-
-2. Create the initial planning state and initialize the NAOProblem object.
-
-3. Run the search algorithm (e.g., Uniform Cost Search, A*, BFS)
-   to generate a valid dance sequence that:
-      - completes all mandatory moves,
-      - includes at least 5 intermediate moves,
-      - stays within the 120-second limit,
-      - respects posture constraints.
-
-4. Extract the resulting plan (the sequence of moves) from the search node.
-
-5. Optionally:
-   - print the plan,
-   - send each movement to the NAO robot for execution,
-   - or save the result for later use.
-
-This file acts as the entry point for planning and executing the NAO choreography.
-"""
-from constants import *
 from nao_problem import NAOProblem
+from search import uniform_cost_search
+from constants import MAX_TIME
 from moves_helper import load_moves
-from naoqi import ALProxy
+import yaml, sys
 
-import sys, os, time, yaml
 with open("config.yaml", "r") as f:
     config = yaml.safe_load(f)
 
@@ -40,14 +14,39 @@ port = config["robot"]["port"]
 if pythonpath not in sys.path:
     sys.path.append(pythonpath)
 
+#create the problem
+initial = "StandInit"
+goal = "Crouch"
+problem = NAOProblem(initial,goal)
+#run search
+result_node = uniform_cost_search(problem)
+if result_node is None:
+    print("No valid plan found")
+    sys.exit(0)
+actions = []
+node = result_node
+'''
+node.action      # the move taken from its parent
+node.state       # the resulting state
+node.parent      # pointer to the previous node
+'''
+while node.parent is not None:
+    actions.append(node.action)
+    node = node.parent
+actions.reverse()
+print("Generated plan:")
+for a in actions:
+    print("->",a)
+print("Total time: ", result_node.state["time"])
+# extract +print actions
 if __name__ == "__main__":
    # 1. Load move data
    moves = load_moves("RobotPositions/")
    move_durations = MAX_TIME
-
+   pass
 
 
     # 2. Initialize search problem
     # 3. Run planner
     # 4. Print or execute plan
-    pass
+    

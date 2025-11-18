@@ -22,10 +22,10 @@ def load_moves(folder_path):
             if hasattr(module, "main"):
                 moves[move_name] = module.main
             else:
-                print(f"[WARN] Module '{module_name}' has no main() function.")
+                print("[WARN] Module '%s' has no main() function." % module_name)
 
         except Exception as e:
-            print(f"[ERROR] Could not import module '{module_name}': {e}")
+            print("[ERROR] Could not import module '%s': %s" % (module_name, e))
 
     return moves
 
@@ -55,5 +55,4 @@ def moves_requiring(posture):
 
 def moves_producing(posture):
     return [m for m, data in MOVES.items() if data["produces"] == posture]
-def get_times():
-    return 
+
