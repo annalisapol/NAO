@@ -185,7 +185,7 @@ MOVES = {
         "category": "ending",
         "duration": 3.1,
         "requires": "standing",   # adjust if needed
-        "produces": "standing",   
+        "produces": "crouching",   
         "module": "Crouch"
     }
 }

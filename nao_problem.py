@@ -1,117 +1,123 @@
-# This file defines the NAOProblem class used for search-based planning.
-# It encodes the robot's possible moves, constraints, and how states
-# transition during the choreography planning 
 from search import Problem
 from constants import MOVES, MAX_TIME
-from moves_helper import (
-    get_mandatory_moves,
-    get_intermediate_moves)
+
+
+class NAOState(object):
+    """
+    Minimal state representation:
+    Search state = posture + mandatory_left
+    NOTE: intermediate_count and time are NOT part of the equality test
+    to allow pruning and avoid infinite loops.
+    """
+
+    def __init__(self, posture, mandatory_left, inter_count, time):
+        self.posture = posture
+        self.mandatory_left = frozenset(mandatory_left)
+        self.inter_count = inter_count
+        self.time = time
+
+    def __eq__(self, other):
+        return (
+            isinstance(other, NAOState) and
+            self.posture == other.posture and
+            self.mandatory_left == other.mandatory_left
+        )
+
+    def __hash__(self):
+        return hash((self.posture, self.mandatory_left))
+
+    def __repr__(self):
+        return "<State posture=%s mand_left=%s inter=%d time=%.2f>" % (
+            self.posture, list(self.mandatory_left),
+            self.inter_count, self.time
+        )
+
 
 class NAOProblem(Problem):
-    def __init__(self, initial="StandInit", goal="Crouch"):
-        '''
-        Initialize the planning problem with:
-        - Initial state
-        - Goal conditions
-        - Durations of each move
-        - Incompatibility constraints
-        - Maximum allowed time (2 min = 120s)
-        '''
-        self.initial=initial
-        self.goal=goal
 
-        self.MANDATORY = set(get_mandatory_moves())
-        self.INTERMEDIATE = set(get_intermediate_moves())
-        self.state={
-            "time": 0,
-            #copying the mandatory moves set to avoid modifying the global structure
-            "mandatory_left": self.MANDATORY.copy(),
-            "intermediate_count":0,
-            "posture": "None",
-            # changing this to None because "Stand" still needs to be computed, since time is at 0
-            # initial posture is not defined yet 
-            # "Stand" should be passed to the problem in some way and then compute it's time
-            
-            # keeping track of moves done for forcing initial and final postures
-            "moves_done": [],
-            "moves": MOVES.copy()
-        }
-        
-        super().__init__(self.state,None)
+    def __init__(self):
+        # sets
+        self.mandatory_moves = {m for m,v in MOVES.items() if v["category"] == "mandatory"}
+        self.intermediate_moves = {m for m,v in MOVES.items() if v["category"] == "intermediate"}
+
+        # StandInit posture
+        initial_posture = MOVES["StandInit"]["produces"]
+
+        initial_state = NAOState(
+            posture = initial_posture,
+            mandatory_left = self.mandatory_moves.copy(),
+            inter_count = 0,
+            time = 0
+        )
+
+        # Python2: explicit constructor call
+        Problem.__init__(self, initial_state)
 
         self.max_time = MAX_TIME
-        
 
+
+    # ------------------------------------------------------------
     def actions(self, state):
-        '''
-        Return all possible moves that the robot can execute from the current states
-        This applies filters for:
-        - Time limit 
-        - Incompatibilities with previous move
-        - Posture requirements (standing/sitting)
-        '''
-        # must start with StandInit 
-        if state["moves_done"] == []:
-            return [self.initial]
 
-        #changing name to next_moves to avoid conflict with reserved python keyword "next"
-        next_moves = []
+        # First move is ALWAYS StandInit
+        if state.time == 0:
+            return ["StandInit"]
 
-        # adapting to new MOVES dict structure
-        for move, info in state["moves"].items():
+        possible = []
 
-            duration = info["duration"]
-            requires = info["requires"]
+        for move, info in MOVES.items():
 
-            if (state["time"]+ duration) <= self.max_time and state["posture"]==requires:
-                next_moves.append(move)
-        return next_moves
+            # Always allow Crouch ONLY at the end
+            if move == "Crouch":
+                if len(state.mandatory_left) == 0 and state.inter_count >= 5:
+                    # OK
+                    pass
+                else:
+                    continue
 
+            # Respect posture
+            if state.posture != info["requires"]:
+                continue
+
+            # Time check
+            if state.time + info["duration"] > self.max_time:
+                continue
+
+            possible.append(move)
+
+        return possible
+
+
+    # ------------------------------------------------------------
     def result(self, state, action):
-        '''
-        The resulting state from executing the passed action to the passed state
-        - time increases based on the move executed
-        - mandatory_left drops the completed move from the begining 
-        - incrementing the intermediate_count (if applied)
-        '''
-        #taking all info about the move called (action represents the move name)
-        # again no logic changes, just adapting to new MOVES dict structure
-        info = state["moves"][action]
 
-        result_state = state.copy()
+        info = MOVES[action]
 
-        result_state["time"]+=info["duration"]
+        # update mandatory
+        new_mand = set(state.mandatory_left)
+        if action in new_mand:
+            new_mand.remove(action)
 
-        #changing to always access self variables, so we don't change a global structure
-        if action in result_state["mandatory_left"]:
-            # importart fix, made a copy so we don't mutate the previous's state "mandatory_left" list
-            # every state should have its own copy of the list for independence
-            # so the algorithm can explore different branches correctly
-            result_state["mandatory_left"] = result_state["mandatory_left"].copy()
-            result_state["mandatory_left"].remove(action)
-            del state["moves"][action]
+        # intermediate counter
+        new_inter = state.inter_count
+        if action in self.intermediate_moves:
+            new_inter += 1
 
-        elif action in self.INTERMEDIATE:
-            result_state["intermediate_count"]+=1
+        return NAOState(
+            posture = info["produces"],
+            mandatory_left = new_mand,
+            inter_count = new_inter, 
+            time = state.time + info["duration"]
+        )
 
-        result_state["posture"] = info["produces"]
-        result_state["moves_done"] = state["moves_done"] + [action]
 
-        return result_state
-
+    # ------------------------------------------------------------
     def goal_test(self, state):
-        '''
-        Check:
-        - are all mandatory moves done (set empty)
-        - at least 5 intermediate moves performed
-        - the total time is less than or equal to 120 seconds
-        '''
         return (
-            #accessing self variable again for consistency and modularity
-            state["time"] <= self.max_time and
-            not state["mandatory_left"] and
-            state["intermediate_count"] >= 5 and 
-            state["moves_done"] and
-            # final posture forced to Crouch
-            state["moves_done"][-1] == self.goal
+            len(state.mandatory_left) == 0 and
+            state.inter_count >= 5 and
+            state.time <= self.max_time and
+            # Must end with final action Crouch:
+            # state.action is not stored; instead check posture
+            state.posture == MOVES["Crouch"]["crouching"]
         )

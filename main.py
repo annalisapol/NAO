@@ -17,12 +17,17 @@ if pythonpath not in sys.path:
 #create the problem
 initial = "StandInit"
 goal = "Crouch"
-problem = NAOProblem(initial,goal)
+problem = NAOProblem()
 #run search
+print("TRY-1 ")
+
 result_node = uniform_cost_search(problem)
+print("TRY- 2")
+
 if result_node is None:
     print("No valid plan found")
-    sys.exit(0)
+
+    #sys.exit(0)
 actions = []
 node = result_node
 '''
@@ -30,6 +35,8 @@ node.action      # the move taken from its parent
 node.state       # the resulting state
 node.parent      # pointer to the previous node
 '''
+print("TRY- 3")
+print("Plan found:", result_node)
 while node.parent is not None:
     actions.append(node.action)
     node = node.parent
