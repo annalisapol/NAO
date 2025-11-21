@@ -1,59 +1,54 @@
-from nao_problem import NAOProblem
-from search import uniform_cost_search
-from constants import MAX_TIME
-from moves_helper import load_moves
-import yaml, sys
+# -*- coding: utf-8 -*-
+import subprocess
+import sys
+from search import astar_search
+from naoPlanning import NaoProblem
+from constants import MOVES, MAX_TIME
 
-with open("config.yaml", "r") as f:
-    config = yaml.safe_load(f)
+def nao_dance(moves, robotIP, port):
+    for m in moves:
+        cmd = "python2 RobotPositions/{0}.py {1} {2}".format(m, robotIP, port)
+        print("Move:", m)
+        subprocess.Popen(cmd.split()).communicate()
 
-pythonpath = config["pythonpath"]
-ip = config["robot"]["ip"]
-port = config["robot"]["port"]
+def main(robotIP, port):
 
-if pythonpath not in sys.path:
-    sys.path.append(pythonpath)
+    # ---------- Build the initial state ----------
+    init_state = {
+        "pose": "StandInit",
+        "isStanding": True,
+        "time_used": MOVES["StandInit"]["duration"],
+        "done_mandatory": frozenset()
+    }
 
-#create the problem
-initial = "StandInit"
-goal = "Crouch"
-problem = NAOProblem()
-#run search
-print("TRY-1 ")
+    # dummy goal placeholder (NaoProblem ignores self.goal)
+    goal_state = None
 
-result_node = uniform_cost_search(problem)
-print("TRY- 2")
+    problem = NaoProblem(init_state, goal_state)
 
-if result_node is None:
-    print("No valid plan found")
+    print("[INFO] Running A* search...")
+    res_node = astar_search(problem)
 
-    #sys.exit(0)
-actions = []
-node = result_node
-'''
-node.action      # the move taken from its parent
-node.state       # the resulting state
-node.parent      # pointer to the previous node
-'''
-print("TRY- 3")
-print("Plan found:", result_node)
-while node.parent is not None:
-    actions.append(node.action)
-    node = node.parent
-actions.reverse()
-print("Generated plan:")
-for a in actions:
-    print("->",a)
-print("Total time: ", result_node.state["time"])
-# extract +print actions
+    if res_node is None:
+        print("[ERROR] No plan found.")
+        return
+
+    # ---------- Extract action sequence ----------
+    plan = res_node.path()
+    moves = [node.state["pose"] for node in plan]
+
+    # remove the first pose (StandInit) so we don't execute it
+    moves = moves[1:]
+
+    print("\n[PLAN FOUND]")
+    for m in moves:
+        print(" -", m)
+
+    # ---------- Execute moves on the NAO ----------
+    nao_dance(moves, robotIP, port)
+
+
 if __name__ == "__main__":
-   # 1. Load move data
-   moves = load_moves("RobotPositions/")
-   move_durations = MAX_TIME
-   pass
-
-
-    # 2. Initialize search problem
-    # 3. Run planner
-    # 4. Print or execute plan
-    
+    robotIP = "127.0.0.1"
+    port = 36803
+    main(robotIP, port)
