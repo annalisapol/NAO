@@ -70,7 +70,7 @@ def main(robotIP, port):
 		print err
 	try:
 		postureProxy = ALProxy("ALRobotPosture", robotIP, port)
-		postureProxy.goToPosture("Stand", 0.5)
+		postureProxy.goToPosture("Stand",1)
 	except  Exception, e:
 		print "Could not create proxy to ALRobotPosture"
 
