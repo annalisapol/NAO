@@ -6,7 +6,8 @@ from moves_helper import load_moves
 from naoqi import ALProxy
 import sys, time, os, yaml
 
-# ----- LOAD CONFIG -----
+
+# ---------------- LOAD CONFIG ----------------
 with open("config.yaml", "r") as f:
     config = yaml.safe_load(f)
 
@@ -14,18 +15,17 @@ pythonpath = config["pythonpath"]
 ip = config["robot"]["ip"]
 port = config["robot"]["port"]
 
-# add pythonpath for robot positions
 if pythonpath not in sys.path:
     sys.path.append(pythonpath)
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROBOT_POSITIONS = os.path.join(BASE_DIR, "RobotPositions")
 
-# load all move scripts
 moves = load_moves(ROBOT_POSITIONS)
 
 
-# ----- HELPER CLASSES -----
+# ---------------- MOVE CLASS ----------------
 class Move(object):
     def __init__(self, duration=None, preconditions=None, postconditions=None):
         self.duration = float(duration)
@@ -33,281 +33,249 @@ class Move(object):
         self.postconditions = postconditions or {}
 
 
-# Build intermediate-only moves + their standing/sitting constraints
+# ---------------- BUILD INTERMEDIATE MOVES ----------------
 def build_intermediate_moves():
-    moves_dict = {}
+    m = {}
     for name, info in MOVES.items():
-        if info.get('category') != 'intermediate':
+        if info.get("category") != "intermediate":
             continue
 
-        duration = info['duration']
-        requires = info.get('requires')
-        produces = info.get('produces')
+        dur = info["duration"] + 0.9  # consistent with planning timing
+        req = info.get("requires")
+        prod = info.get("produces")
 
         pre = {}
         post = {}
 
-        if requires == 'standing':
-            pre['standing'] = True
-        elif requires == 'sitting':
-            pre['standing'] = False
+        if req == "standing":
+            pre["standing"] = True
+        elif req == "sitting":
+            pre["standing"] = False
 
-        if produces == 'standing':
-            post['standing'] = True
-        elif produces == 'sitting':
-            post['standing'] = False
+        if prod == "standing":
+            post["standing"] = True
+        elif prod == "sitting":
+            post["standing"] = False
 
-        moves_dict[name] = Move(duration, pre, post)
+        m[name] = Move(dur, pre, post)
+    return m
 
-    return moves_dict
 
-
-# Standing or sitting after a mandatory move?
+# ---------------- POSTURE FUNCTIONS ----------------
 def posture_after(move_name):
-    info = MOVES.get(move_name, {})
-    prod = info.get('produces')
-    if prod == 'sitting':
-        return False
-    return True
+    """Return True = standing, False = sitting"""
+    prod = MOVES.get(move_name, {}).get("produces")
+    return False if prod == "sitting" else True
 
 
-# Standing or sitting required before the move?
 def posture_before(move_name):
-    info = MOVES.get(move_name, {})
-    req = info.get('requires')
-    if req == 'sitting':
+    req = MOVES.get(move_name, {}).get("requires")
+    if req == "sitting":
         return False
-    if req == 'standing':
+    if req == "standing":
         return True
     return None
 
 
-# Execute a move with the loaded NAOqi functions
-def run_move(move_name):
-    if move_name not in moves:
-        print("[ERROR] Move not found:", move_name)
-        return
-    print("[RUNNING]", move_name)
-    moves[move_name](ip, port)
+# ---------------- EXECUTION HELPERS ----------------
+def stabilize():
+    """Stabilize robot before/after each move."""
+    try:
+        motionProxy.wbEnable(False)
+        motionProxy.setStiffnesses("Body", 1.0)
+        postureProxy.goToPosture("StandInit", 0.7)
+        time.sleep(0.3)
+    except Exception as e:
+        print("[WARN] Stabilization issue:", e)
 
 
-# Measure real execution time for each move
 def measure_move_time(move_name, ip, port):
     if move_name not in moves:
         print("[ERROR] Move not found:", move_name)
         return 0.0
 
+    stabilize()
     print("[MEASURE]", move_name)
-    start = time.time()
+    t0 = time.time()
     try:
         moves[move_name](ip, port)
     except Exception as e:
-        print("[ERROR during execution of %s] %s" % (move_name, e))
+        print("[ERROR during %s] %s" % (move_name, e))
         return 0.0
-    end = time.time()
+    t1 = time.time()
+    stabilize()
+    return t1 - t0
 
-    return end - start
 
-
-# ----- MAIN PIPELINE -----
+# ---------------- MAIN ----------------
 def main():
-
-    # Create the NAO audio player proxy.
+    global postureProxy, motionProxy
+    postureProxy = ALProxy("ALRobotPosture", ip, port)
+    motionProxy = ALProxy("ALMotion", ip, port)
     audio = ALProxy("ALAudioPlayer", ip, port)
 
-    # Path to the selected song (converted to WAV).
-    # This will be played asynchronously during dance moves.
     song_path = os.path.join(BASE_DIR, "music", "levitating.wav")
 
-    # Mandatory move sequence (fixed order)
+    # TEAMMATE'S FINAL MANDATORY ORDER
     mandatory_order = [
         "StandInit",
         "WipeForehead",
         "Hello",
         "StandZero",
         "Sit",
-        "Stand",
+        "VOnEyes",
         "SitRelax",
         "Stand",
         "Crouch"
     ]
 
-    mandatory_moves = []
-    for name in mandatory_order:
-        info = MOVES[name]
-        mandatory_moves.append((name, Move(info['duration'])))
+    mandatory_moves = [(name, Move(MOVES[name]["duration"] + 0.9))
+                       for name in mandatory_order]
 
-    # Load intermediate moves
     intermediate_moves = build_intermediate_moves()
 
-    # Compute total mandatory time
-    total_mand_time = sum(m[1].duration for m in mandatory_moves)
-    if total_mand_time > MAX_TIME:
-        print("ERROR: mandatory moves alone exceed MAX_TIME = %.2f" % MAX_TIME)
+    total_mand = sum(m[1].duration for m in mandatory_moves)
+    if total_mand > MAX_TIME:
+        print("ERROR: mandatory exceed MAX_TIME", total_mand)
         return
 
-    # Time budget for intermediates
+    time_for_inter = MAX_TIME - total_mand
     segments = len(mandatory_moves) - 1
-    time_for_intermediates = MAX_TIME - total_mand_time
 
-    # Identify where intermediate moves are allowed (only standing→standing)
+    # Standing segments detection
     standing_segments = 0
-    segment_is_standing = []
-
+    seg_ok = []
     for i in range(1, len(mandatory_moves)):
-        start_name = mandatory_moves[i - 1][0]
-        end_name = mandatory_moves[i][0]
+        start = mandatory_moves[i-1][0]
+        end = mandatory_moves[i][0]
 
-        start_post = posture_after(start_name)
-        end_pre = posture_before(end_name)
+        start_post = posture_after(start)
+        end_pre = posture_before(end)
 
-        if start_post is True and (end_pre is None or end_pre is True):
-            segment_is_standing.append(True)
+        ok = start_post is True and (end_pre in [True, None])
+        seg_ok.append(ok)
+        if ok:
             standing_segments += 1
-        else:
-            segment_is_standing.append(False)
 
-    per_segment_time = (time_for_intermediates / float(standing_segments)) if standing_segments > 0 else 0.0
+    per_segment_time = (time_for_inter / standing_segments) if standing_segments else 0
 
     print("Planning choreography...")
-    print("Total mandatory time: %.2f s, remaining for intermediates: %.2f s"
-          % (total_mand_time, time_for_intermediates))
+    print("Mandatory time:", total_mand, "Remaining:", time_for_inter)
 
-    full_choreo = ()
-    total_intermediate_moves = 0
+    full = ()
+    used_intermediates = set()
+    total_inter = 0
 
-    # ----- PLAN FOR EVERY SEGMENT -----
+    # ------------ PLAN EACH SEGMENT ------------
     for idx in range(1, len(mandatory_moves)):
-        start_name = mandatory_moves[idx - 1][0]
-        end_name = mandatory_moves[idx][0]
+        start = mandatory_moves[idx-1][0]
+        end = mandatory_moves[idx][0]
 
-        print(" Segment %d: %s -> %s" % (idx, start_name, end_name))
+        print("\nSegment %d: %s -> %s" % (idx, start, end))
 
-        if end_name == "SitRelax":
-            required_moves = 0
-            segment_time = 0.0
-            print("  -> forcing Stand -> SitRelax (no intermediates).")
-        else:
-            if segment_is_standing[idx - 1]:
-                required_moves = 2
-                segment_time = per_segment_time
-            else:
-                required_moves = 0
-                segment_time = 0.0
-        required_moves = 2 if segment_is_standing[idx - 1] else 0
-        segment_time = per_segment_time if required_moves else 0.0
-
-
-        if required_moves == 0:
+        # SPECIAL CASE: Stand → SitRelax MUST have no intermediates
+        if end == "SitRelax":
+            print("  -> Forcing no intermediates for SitRelax transition.")
             if idx == 1:
-                full_choreo += (start_name,)
-            full_choreo += (end_name,)
-            print("  -> no intermediates (posture change or sitting).")
+                full += (start,)
+            full += (end,)
             continue
 
-        start_post_standing = posture_after(start_name)
+        required = 1 if seg_ok[idx-1] else 0   # OPTION E: exactly 1
+        seg_time = per_segment_time if required else 0
 
-        choreography = (start_name,)
-        initial_state = (
-            ('choreography', choreography),
-            ('standing', start_post_standing),
-            ('remaining_time', segment_time),
+        if required == 0:
+            if idx == 1:
+                full += (start,)
+            full += (end,)
+            print("  -> Non-standing segment: no intermediates.")
+            continue
+
+        # Build search problem
+        start_standing = posture_after(start)
+        initial = (
+            ('choreography', (start,)),
+            ('standing', start_standing),
+            ('remaining_time', seg_time),
             ('moves_done', 0),
         )
+        goal = (('standing', True), ('moves_done', required))
 
-        goal_state = (
-            ('standing', True),
-            ('moves_done', required_moves),
-        )
+        # Encourage non-used moves first
+        candidate_moves = {n: m for n, m in intermediate_moves.items()
+                           if n not in used_intermediates}
+        if len(candidate_moves) < required:
+            candidate_moves = intermediate_moves
 
-        # Run the search algorithm
-        used_intermediates = set(
-            m for m in full_choreo
-            if m in intermediate_moves
-        )
+        print("  -> Using intermediate pool:", list(candidate_moves.keys())[:5], "...")
 
-        unused_moves = {
-            name: mv 
-            for name, mv in intermediate_moves.items()
-            if name not in used_intermediates
-        }
+        problem = NaoProblem(initial, goal, candidate_moves)
+        sol = iterative_deepening_search(problem)
 
-        if len(unused_moves) >= required_moves:
-            chosen_moves = unused_moves
-            print("  -> using NEW intermediate moves:", list(unused_moves.keys()))
-        else:
-            chosen_moves = intermediate_moves
-            print("  -> using ALL intermediate moves")
-
-        problem = NaoProblem(initial_state, goal_state, chosen_moves)
-        solution_node = iterative_deepening_search(problem)
-
-        if solution_node is None:
-            print("  -> No solution for this segment.")
+        if sol is None:
+            print("  -> No solution found.")
             if idx == 1:
-                full_choreo += (start_name,)
-            full_choreo += (end_name,)
+                full += (start,)
+            full += (end,)
             continue
 
-        sol_dict = from_state_to_dict(solution_node.state)
-        seg_choreo = sol_dict['choreography']
+        sol_dict = from_state_to_dict(sol.state)
+        choreo = sol_dict['choreography']
 
+        # update global
         if idx == 1:
-            full_choreo += seg_choreo
+            full += choreo
         else:
-            full_choreo += seg_choreo[1:]  # skip repeating the start move
+            full += choreo[1:]
 
-        total_intermediate_moves += sol_dict['moves_done']
+        # track used
+        for m in choreo:
+            if m in intermediate_moves:
+                used_intermediates.add(m)
 
-        if full_choreo[-1] != end_name:
-            full_choreo += (end_name,)
+        total_inter += sol_dict['moves_done']
 
-        print("  -> segment choreography:", " -> ".join(seg_choreo))
+        if full[-1] != end:
+            full += (end,)
 
-    # ----- FINAL CHOREOGRAPHY -----
-    print("\nFinal choreography:")
-    print(" -> ".join(full_choreo))
+        print("  -> segment:", " -> ".join(choreo))
 
-    total_time = sum(MOVES[m]['duration'] for m in full_choreo)
-    print("\nTotal time: %.2f s (MAX_TIME = %.2f)" % (total_time, MAX_TIME))
-    print("Total intermediate moves used:", total_intermediate_moves)
 
-    print("\n REAL EXECUTION TIMING")
+    # ---------- FINAL CHOREO ----------
+    print("\nFINAL CHOREOGRAPHY:")
+    print(" -> ".join(full))
 
-    real_total = 0.0
-    real_times = {}
+    planned_total = sum(MOVES[m]["duration"] + 0.9 for m in full)
+    print("\nPlanned total:", planned_total, "MAX=", MAX_TIME)
+    print("Intermediate used:", total_inter)
 
-    # ----- START MUSIC ASYNCHRONOUSLY -----
+    # ---------- START MUSIC ASYNC ----------
     print("\nStarting music...")
-    music_task_id = None
-
     try:
-        # async playback → returns a task ID we can stop later
-        music_task_id = audio.post.playFile(song_path)
-        print("[INFO] Music started, task id:", music_task_id)
+        music_id = audio.post.playFile(song_path)
+        print("[OK] Music playing with task ID:", music_id)
     except Exception as e:
         print("[ERROR] Could not play music:", e)
+        music_id = None
 
-
-    # ----- EXECUTE MOVES -----
-    for move_name in full_choreo:
-        dt = measure_move_time(move_name, ip, port)
-        real_times[move_name] = dt
+    # ---------- EXECUTE SEQUENCE ----------
+    real_total = 0
+    for m in full:
+        dt = measure_move_time(m, ip, port)
         real_total += dt
-        print("  %s : %.2f s" % (move_name, dt))
+        print("  %s : %.2f s" % (m, dt))
 
-    print("\nREAL total execution time: %.2f s" % real_total)
+    print("\nREAL total time:", real_total)
 
-    # ----- STOP MUSIC -----
+    # ---------- STOP MUSIC ----------
     print("Stopping music...")
     try:
-        if music_task_id is not None:
-            audio.stop(music_task_id)   # stop only that song
+        if music_id:
+            audio.stop(music_id)
         else:
             audio.stopAll()
     except:
         pass
-
 
 
 if __name__ == "__main__":
