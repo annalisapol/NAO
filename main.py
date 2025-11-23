@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from search import iterative_deepening_search
 from nao_problem import NaoProblem, from_state_to_dict
 from constants import MOVES, MAX_TIME
@@ -249,6 +248,7 @@ def main():
     print("\nREAL total execution time: %.2f s" % real_total)
 
 
+
 if __name__ == "__main__":
     main()
 
@@ -318,7 +318,7 @@ def posture_after(move_name):
     prod = info.get('produces')
     if prod == 'sitting':
         return False
-    return True  # standing, crouching, None → treat as standing
+    return True  # standing, crouching, None  treat as standing
 
 
 def posture_before(move_name):

@@ -8,84 +8,84 @@ MAX_TIME = 120
 MOVES = {
     'ArmDanceDX': {
         "category": "intermediate",
-        "duration": 6.55,
+        "duration": 7.55,
         "requires": "standing",
         "produces": "standing",
         "module": "ArmDanceDX"
     },
     'ArmDanceSX': {
         "category": "intermediate",
-        "duration": 6.56,
+        "duration": 7.56,
         "requires": "standing",
         "produces": "standing",
         "module": "ArmDanceSX"
     },
     'ArmsOpening': {
         "category": "intermediate",
-        "duration": 6.87,
+        "duration": 7.87,
         "requires": "standing",
         "produces": "standing",
         "module": "ArmsOpening"
     },
     'BirthdayDance': {
         "category": "intermediate",
-        "duration": 12.47,
+        "duration": 13.47,
         "requires": "standing",
         "produces": "standing",
         "module": "BirthdayDance"
     },
     'DiagonalLeft': {
         "category": "intermediate",
-        "duration": 3.36,
+        "duration": 4.36,
         "requires": "standing",
         "produces": "standing",
         "module": "DiagonalLeft"
     },
     'DiagonalRight': {
         "category": "intermediate",
-        "duration": 3.38,
+        "duration": 4.38,
         "requires": "standing",
         "produces": "standing",
         "module": "DiagonalRight"
     },
     'Disco': {
         "category": "intermediate",
-        "duration": 6.61,
+        "duration": 7.61,
         "requires": "standing",
         "produces": "standing",
         "module": "Disco"
     },
     'DoubleMovement': {
         "category": "intermediate",
-        "duration": 7.26,
+        "duration": 8.26,
         "requires": "standing",
         "produces": "standing",
         "module": "DoubleMovement"
     },
     'MoveBackward': {
         "category": "intermediate",
-        "duration": 4.5,
+        "duration": 5.5,
         "requires": "standing",
         "produces": "standing",
         "module": "MoveBackward"
     },
     'MoveForward': {
         "category": "intermediate",
-        "duration": 3.94,
+        "duration": 4.94,
         "requires": "standing",
         "produces": "standing",
         "module": "MoveForward"
     },
     'RightArm': {
         "category": "intermediate",
-        "duration": 12.33,
+        "duration": 13.33,
         "requires": "standing",
         "produces": "standing",
         "module": "RightArm"
     },
     'RotationFootLLeg': {
         "category": "intermediate",
-        "duration": 13.35,
+        "duration": 14.35,
         "requires": "standing",
         "produces": "standing",
         "module": "RotationFootLLeg"
@@ -99,91 +99,91 @@ MOVES = {
     },
     'RotationHandgunObject': {
         "category": "intermediate",
-        "duration": 5.43,
+        "duration": 6.43,
         "requires": "standing",
         "produces": "standing",
         "module": "RotationHandgunObject"
     },
     'Sprinkler1': {
         "category": "intermediate",
-        "duration": 6.65,
+        "duration": 7.65,
         "requires": "standing",
         "produces": "standing",
         "module": "Sprinkler1"
     },
     'Sprinkler2': {
         "category": "intermediate",
-        "duration": 6.58,
+        "duration": 7.58,
         "requires": "standing",
         "produces": "standing",
         "module": "Sprinkler2"
     },
     'UnionArms': {
         "category": "intermediate",
-        "duration": 10.13,
+        "duration": 11.13,
         "requires": "standing",
         "produces": "standing",
         "module": "UnionArms"
     },
     'VOnEyes': {
         "category": "intermediate",
-        "duration": 7.74,
+        "duration": 8.74,
         "requires": "standing",
         "produces": "standing",
         "module": "VOnEyes"
     },
     "Sit": {
         "category": "mandatory",
-        "duration": 13.2,
+        "duration": 14.2,
         "requires": "standing",
         "produces": "sitting",
         "module": "Sit"
     },
     "WipeForehead": {
         "category": "mandatory",
-        "duration": 7.96,
+        "duration": 8.96,
         "requires": "standing",
         "produces": "standing",
         "module": "WipeForehead"
     },
     "Hello": {
         "category": "mandatory",
-        "duration": 7.68,
+        "duration": 8.68,
         "requires": "standing",
         "produces": "standing",
         "module": "Hello"
     },
     "SitRelax": {
         "category": "mandatory",
-        "duration": 11.6,
+        "duration": 12.6,
         "requires": "standing",
         "produces": "sitting",
         "module": "SitRelax"
     },
     "Stand": {
         "category": "mandatory",
-        "duration": 0.82,
+        "duration": 1.82,
         "requires": "sitting",
         "produces": "standing",
         "module": "Stand"
     },
     "StandZero": {
         "category": "mandatory",
-        "duration": 1.25,
+        "duration": 2.25,
         "requires": "standing",
         "produces": "standing",
         "module": "StandZero"
     },
     "StandInit": {
         "category": "starting",
-        "duration": 0.76,
+        "duration": 1.76,
         "requires": "standing",   # adjust if needed
         "produces": "standing",
         "module": "StandInit"
     },
     "Crouch": {
         "category": "ending",
-        "duration": 3.1,
+        "duration": 4.1,
         "requires": "standing",   # adjust if needed
         "produces": "crouching",   
         "module": "Crouch"
