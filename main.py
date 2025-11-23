@@ -109,16 +109,17 @@ def measure_move_time(move_name, ip, port):
 def main():
 
     mandatory_order = [
-        "StandInit",
-        "WipeForehead",
-        "Hello",
-        "StandZero",
-        "Sit",
-        "Stand",
-        "SitRelax",
-        "Stand",
-        "Crouch"
-    ]
+    "StandInit",
+    "WipeForehead",
+    "Hello",
+    "StandZero",
+    "Sit",
+    "VOnEyes",
+    "SitRelax",
+    "Stand",
+    "Crouch"
+]
+
 
     mandatory_moves = []
     for name in mandatory_order:
@@ -169,12 +170,18 @@ def main():
 
         print(" Segment %d: %s -> %s" % (idx, start_name, end_name))
 
-        if segment_is_standing[idx - 1]:
-            required_moves = 2
-            segment_time = per_segment_time
-        else:
+        if end_name == "SitRelax":
             required_moves = 0
             segment_time = 0.0
+            print("  -> forcing Stand -> SitRelax (no intermediates).")
+        else:
+            if segment_is_standing[idx - 1]:
+                required_moves = 2
+                segment_time = per_segment_time
+            else:
+                required_moves = 0
+                segment_time = 0.0
+
 
         if required_moves == 0:
 
@@ -199,7 +206,25 @@ def main():
             ('moves_done', required_moves),
         )
 
-        problem = NaoProblem(initial_state, goal_state, intermediate_moves)
+        used_intermediates = set(
+            m for m in full_choreo
+            if m in intermediate_moves
+        )
+
+        unused_moves = {
+            name: mv 
+            for name, mv in intermediate_moves.items()
+            if name not in used_intermediates
+        }
+
+        if len(unused_moves) >= required_moves:
+            chosen_moves = unused_moves
+            print("  -> using NEW intermediate moves:", list(unused_moves.keys()))
+        else:
+            chosen_moves = intermediate_moves
+            print("  -> using ALL intermediate moves")
+
+        problem = NaoProblem(initial_state, goal_state, chosen_moves)
         solution_node = iterative_deepening_search(problem)
 
         if solution_node is None:

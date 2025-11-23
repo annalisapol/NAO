@@ -1,28 +1,8 @@
-"""
-NAO segment-planning problem
-
-This problem is used ONLY for:
-- planning intermediate moves between two mandatory moves
-- given:
-    - current choreography (tuple of move names)
-    - current standing (True/False)
-    - remaining_time for this segment
-    - moves_done (int, number of intermediates in this segment)
-"""
-
 import random
 from search import Problem
 
 
 def from_state_to_dict(state):
-    """
-    Converts a state (tuple of tuples) into a dict.
-    Example state:
-      (('choreography', ('StandInit', 'Move1')),
-       ('standing', True),
-       ('remaining_time', 10.0),
-       ('moves_done', 2))
-    """
     params_dict = {}
     for t in state:
         if not t:
@@ -40,68 +20,51 @@ def from_state_to_dict(state):
 
 class NaoProblem(Problem):
 
-    def __init__(self, initial, goal, moves):
-        """
-        initial: state (tuple of tuples)
-        goal   : goal state (tuple of tuples), typically:
-                 (('standing', True/False or None),
-                  ('moves_done', k))
-        moves  : dict name -> Move(duration, preconditions, postconditions)
-        """
+    def __init__(self, initial, goal, moves):      
         Problem.__init__(self, initial, goal)
         self.available_moves = moves
 
     def is_move_applicable(self, state, move_name, move):
-        """
-        Check whether 'move_name' can be executed in 'state'.
-        Criteria (simplified from the other group):
-          1) enough remaining_time
-          2) standing preconditions satisfied (if any)
-          3) avoid repeating the same move as the last one
-        """
+      
         state_dict = from_state_to_dict(state)
         choreo = state_dict['choreography']
         last_move = choreo[-1]
         remaining_time = state_dict['remaining_time']
         standing = state_dict['standing']
 
-        # 1: time constraint
         if remaining_time < move.duration:
             return False
 
-        # 2: standing preconditions
+        # standing preconditions
         if 'standing' in move.preconditions:
             if standing != move.preconditions['standing']:
                 return False
 
-        # 3: avoid repeating same move twice in a row
+        #avoid repeating same move twice in a row
         if move_name == last_move:
             return False
 
         return True
 
     def actions(self, state):
-        """
-        Returns the list of possible move names from 'available_moves'
-        that satisfy applicability.
-        """
+    
         actions = []
+        state_dict = from_state_to_dict(state)
+        choreo = state_dict['choreography']
+
         for move_name, move in self.available_moves.items():
+
+            if choreo.count(move_name) >= 2:
+                continue
+
             if self.is_move_applicable(state, move_name, move):
                 actions.append(move_name)
-        # Randomize to get some variety
+
         random.shuffle(actions)
         return actions
+        
 
     def result(self, state, action):
-        """
-        Apply move 'action' to 'state', return new state.
-        Updates:
-          - choreography: append action
-          - standing: updated via move.postconditions if present
-          - remaining_time: minus move.duration
-          - moves_done: +1
-        """
         move = self.available_moves[action]
         state_dict = from_state_to_dict(state)
 
@@ -125,11 +88,6 @@ class NaoProblem(Problem):
         return new_state
 
     def goal_test(self, state):
-        """
-        A state is goal if:
-          - moves_done >= goal['moves_done']
-          - if goal specifies 'standing' (not None), then standing matches
-        """
         state_dict = from_state_to_dict(state)
         goal_dict = from_state_to_dict(self.goal)
 

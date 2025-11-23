@@ -8,21 +8,21 @@ MAX_TIME = 120
 MOVES = {
     'ArmDanceDX': {
         "category": "intermediate",
-        "duration": 7.55,
+        "duration": 5.55,
         "requires": "standing",
         "produces": "standing",
         "module": "ArmDanceDX"
     },
     'ArmDanceSX': {
         "category": "intermediate",
-        "duration": 7.56,
+        "duration": 5.56,
         "requires": "standing",
         "produces": "standing",
         "module": "ArmDanceSX"
     },
     'ArmsOpening': {
         "category": "intermediate",
-        "duration": 7.87,
+        "duration": 6.87,
         "requires": "standing",
         "produces": "standing",
         "module": "ArmsOpening"
@@ -50,28 +50,28 @@ MOVES = {
     },
     'Disco': {
         "category": "intermediate",
-        "duration": 7.61,
+        "duration": 6.61,
         "requires": "standing",
         "produces": "standing",
         "module": "Disco"
     },
     'DoubleMovement': {
         "category": "intermediate",
-        "duration": 8.26,
+        "duration": 7.26,
         "requires": "standing",
         "produces": "standing",
         "module": "DoubleMovement"
     },
     'MoveBackward': {
         "category": "intermediate",
-        "duration": 5.5,
+        "duration": 4.5,
         "requires": "standing",
         "produces": "standing",
         "module": "MoveBackward"
     },
     'MoveForward': {
         "category": "intermediate",
-        "duration": 4.94,
+        "duration": 5,
         "requires": "standing",
         "produces": "standing",
         "module": "MoveForward"
@@ -106,14 +106,14 @@ MOVES = {
     },
     'Sprinkler1': {
         "category": "intermediate",
-        "duration": 7.65,
+        "duration": 5.65,
         "requires": "standing",
         "produces": "standing",
         "module": "Sprinkler1"
     },
     'Sprinkler2': {
         "category": "intermediate",
-        "duration": 7.58,
+        "duration": 5.58,
         "requires": "standing",
         "produces": "standing",
         "module": "Sprinkler2"
@@ -127,14 +127,14 @@ MOVES = {
     },
     'VOnEyes': {
         "category": "intermediate",
-        "duration": 8.74,
+        "duration": 6.74,
         "requires": "standing",
         "produces": "standing",
         "module": "VOnEyes"
     },
     "Sit": {
         "category": "mandatory",
-        "duration": 14.2,
+        "duration": 11.2,
         "requires": "standing",
         "produces": "sitting",
         "module": "Sit"
@@ -169,7 +169,7 @@ MOVES = {
     },
     "StandZero": {
         "category": "mandatory",
-        "duration": 2.25,
+        "duration": 1.25,
         "requires": "standing",
         "produces": "standing",
         "module": "StandZero"
